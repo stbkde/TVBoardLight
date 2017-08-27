@@ -170,7 +170,10 @@ void FadeToHexColor(uint16_t time, String hexstring) // hexstring is a string li
     FadeToRgbColor(time, targetColor);
 } 
 
-void FadeToRgbwColor(uint16_t time, RgbwColor targetColor) //since values are centiseconds, 1000 = 10 seconds
+/*
+ * 
+ */
+/*void FadeToRgbwColor(uint16_t time, RgbwColor targetColor) //since values are centiseconds, 1000 = 10 seconds
 {
     LastBrightnessState = strip.GetBrightness();
   
@@ -209,45 +212,7 @@ void FadeToRgbwColor(uint16_t time, RgbwColor targetColor) //since values are ce
     
     CurrentBrightnessState = strip.GetBrightness();
 }
+*/
 
 
-#ifdef ARDUINO_ARCH_AVR
-// for AVR, you need to manage the state due to lack of STL/compiler support
-// for Esp8266 you can define the function using a lambda and state is created for you
-// see below for an example
-struct MyRgbAnimationState
-{
-    RgbColor StartingColor;  // the color the animation starts at
-    RgbColor EndingColor; // the color the animation will end at
-    AnimEaseFunction Easeing; // the acceleration curve it will use 
-};
 
-struct MyRgbwAnimationState
-{
-    RgbwColor StartingColor;  // the color the animation starts at
-    RgbwColor EndingColor; // the color the animation will end at
-    AnimEaseFunction Easeing; // the acceleration curve it will use 
-};
-
-MyAnimationState animationState[PixelCount];
-// one entry per pixel to match the animation timing manager
-
-
-void AnimUpdate(const AnimationParam& param)
-{
-    // first apply an easing (curve) to the animation
-    // this simulates acceleration to the effect
-    float progress = animationState[param.index].Easeing(param.progress);
-
-    // this gets called for each animation on every time step
-    // progress will start at 0.0 and end at 1.0
-    // we use the blend function on the RgbColor to mix
-    // color based on the progress given to us in the animation
-    RgbwColor updatedColor = RgbwColor::LinearBlend(
-        animationState[param.index].StartingColor,
-        animationState[param.index].EndingColor,
-        progress);
-    // apply the color to the strip
-    strip.SetPixelColor(param.index, updatedColor);
-}
-#endif

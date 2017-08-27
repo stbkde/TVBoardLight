@@ -28,10 +28,6 @@ RgbColor LastRgbColor = RgbColor(0);    // for restoring after switch on
 RgbColor CurrentRgbColor = RgbColor(0); // for animations which using current color
 RgbColor NextRgbColor = RgbColor(0);    // for setting after animation finished
 
-RgbwColor LastRgbwColor = RgbwColor(0);
-RgbwColor CurrentRgbwColor = RgbwColor(0);
-RgbwColor NextRgbwColor = RgbwColor(0);
-
 uint8_t LastBrightnessState = 150;
 uint8_t CurrentBrightnessState = 150; // for restore after animations finished
 uint8_t NextBrightnessState = 150; // same as above !!!!!;
@@ -47,8 +43,8 @@ const char coldiv = ',';
 #include "brightness.h"
 
 /* waiting */// animations
-//#include "animation_fadelr.h"
-#include "animation_pulsecolor.h"
+//#include "wa_fadelr.h"
+#include "wa_pulsecolor.h"
 
 bool DeviceState = OFF;
 unsigned long currentMillis = 0;
@@ -175,7 +171,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
         if (LastRgbColor == RgbColor(0)) { // after hardreset
           Serial.println("LastRgbColor ist black. Setting to colorMorning");
           LastRgbColor = RgbColorMorning;
-          LastRgbwColor = RgbwColorMorning;
         }
 
         Serial.println("Received switch on signal...");
@@ -187,20 +182,15 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
           // RGB
           NextRgbColor = LastRgbColor; // initial color
           CurrentRgbColor = LastRgbColor;
-          // RGBW
-          NextRgbwColor = LastRgbwColor; // initial color
-          CurrentRgbwColor = LastRgbwColor;
         }
         else {
           Serial.println("WaitingAnimationRunning == false");
 
           FadeToBrightness(DefaultBrightnessFadingTime, LastBrightnessState);
           FadeToRgbColor(DefaultFadingTime, LastRgbColor);
-          //FadeToRgbwColor(DefaultFadingTime, LastRgbwColor);
 
           CurrentBrightnessState = LastBrightnessState;
           CurrentRgbColor = LastRgbColor;
-          CurrentRgbwColor = LastRgbwColor;
         }
       }
       else {  // (DeviceState == ON)
@@ -217,7 +207,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
         LastBrightnessState = CurrentBrightnessState;
         LastRgbColor = CurrentRgbColor;
-        LastRgbwColor = CurrentRgbwColor;
         Serial.println("Switching OFF and setting LastRgbColor = CurrentRgbColor");
 
         logColorStates();
@@ -228,9 +217,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
           //RGB
           NextRgbColor = RgbColor(0); // setting after animation finished
           CurrentRgbColor = RgbColor(0);
-          // RGBW
-          NextRgbwColor = RgbwColor(0); // setting after animation finished
-          CurrentRgbwColor = RgbwColor(0);
 
           CurrentBrightnessState = strip.GetBrightness();
         }
@@ -242,10 +228,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
           FadeToRgbColor(DefaultFadingTime, RgbColor(0));
           NextRgbColor = RgbColor(0);
           CurrentRgbColor = RgbColor(0);
-          // RGBW
-          //FadeToRgbwColor(DefaultFadingTime, RgbwColor(0));
-          NextRgbwColor = RgbwColor(0);
-          CurrentRgbwColor = RgbwColor(0);
 
           CurrentBrightnessState = strip.GetBrightness();
         }
@@ -281,13 +263,9 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
           if (DeviceState == ON) {
             CurrentRgbColor = ncol;
             NextRgbColor = ncol;
-            
-            CurrentRgbwColor = RgbwColor(ncol.R, ncol.G, ncol.B, ncol.CalculateBrightness());
-            NextRgbwColor = RgbwColor(ncol.R, ncol.G, ncol.B, ncol.CalculateBrightness());
           }
           else {
             LastRgbColor = ncol;
-            LastRgbwColor = RgbwColor(ncol.R, ncol.G, ncol.B, ncol.CalculateBrightness());
           }
         }
         else {
@@ -301,7 +279,6 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
           }
           else {
             LastRgbColor = ncol;
-            LastRgbwColor = RgbColor(ncol.R, ncol.G, ncol.B);
           }
         }
         logColorStates();
@@ -508,11 +485,6 @@ void logColorStates() {
   Serial.println("Last Color: R:" + String(LastRgbColor.R) + ", G:" + String(LastRgbColor.G) + ", B:" + String(LastRgbColor.B));
   Serial.println("Current Color: R:" + String(CurrentRgbColor.R) + ", G:" + String(CurrentRgbColor.G) + ", B:" + String(CurrentRgbColor.B));
   Serial.println("Next Color: R:" + String(NextRgbColor.R) + ", G:" + String(NextRgbColor.G) + ", B:" + String(NextRgbColor.B));
-  Serial.println();
-  Serial.println("\n*********** Rgbw Values **********************");
-  Serial.println("Last Color: R:" + String(LastRgbwColor.R) + ", G:" + String(LastRgbwColor.G) + ", B:" + String(LastRgbwColor.B) + ", W:" + String(LastRgbwColor.W));
-  Serial.println("Current Color: R:" + String(CurrentRgbwColor.R) + ", G:" + String(CurrentRgbwColor.G) + ", B:" + String(CurrentRgbwColor.B) + ", W:" + String(LastRgbwColor.W));
-  Serial.println("Next Color: R:" + String(NextRgbwColor.R) + ", G:" + String(NextRgbwColor.G) + ", B:" + String(NextRgbwColor.B) + ", W:" + String(NextRgbwColor.W));
   Serial.println();
 }
 
